@@ -3981,12 +3981,6 @@ react-native-elements@^0.19.1:
     opencollective "^1.0.3"
     prop-types "^15.5.8"
 
-react-native-fab@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/react-native-fab/-/react-native-fab-1.0.7.tgz#21b74c51eb71aa6efdccb624ad639956821c3a04"
-  dependencies:
-    prop-types "^15.5.10"
-
 react-native-facebook-login@^1.6.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/react-native-facebook-login/-/react-native-facebook-login-1.6.1.tgz#c1c10ddccab8eb99a5c5432ea7e6ebdd2ab2319e"
@@ -4015,6 +4009,10 @@ react-native-maps@0.21.0:
   dependencies:
     babel-plugin-module-resolver "^2.3.0"
     babel-preset-react-native "1.9.0"
+
+react-native-modal-activityindicator@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-modal-activityindicator/-/react-native-modal-activityindicator-0.0.1.tgz#eea1ea1aec02af17f74122d8b611cf8267ec7b1a"
 
 react-native-reanimated@1.0.0-alpha.6:
   version "1.0.0-alpha.6"
