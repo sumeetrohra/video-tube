@@ -1,9 +1,16 @@
 import React, { Component } from 'react';
-import { View } from 'react-native';
+import { View, ListView, Text } from 'react-native';
 import { Button, FormInput, FormLabel } from 'react-native-elements';
 import { DocumentPicker } from 'expo';
 import firebase from 'firebase';
-import ModalActivityIndicator from 'react-native-modal-activityindicator'
+import ModalActivityIndicator from 'react-native-modal-activityindicator';
+import { connect } from 'react-redux';
+import _ from 'lodash';
+
+import { videoListFetch } from '../actions';
+import ListItem from '../components/ListItem';
+import Card from '../components/Card';
+import CardSection from '../components/CardSection';
 
 class Upload extends Component {
 
@@ -23,6 +30,25 @@ class Upload extends Component {
             name: null,
             url: null
         });
+    }
+
+    componentWillMount() {
+        this.createDataSource(this.props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.createDataSource(nextProps);
+    }
+
+    createDataSource({ videos }) {
+        const ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2
+        });
+        this.dataSource = ds.cloneWithRows(videos);
+    }
+
+    renderRow(video) {
+        return <ListItem video={video} />;
     }
 
     //document picker used for getting video uri
@@ -60,6 +86,7 @@ class Upload extends Component {
                     .then(() => this.setState({ loading: false }))
                     .catch((err) => console.log(err));
 
+                    this.videoListFetch();
                     this.initialState();
                 })
                 .catch(err => console.log(err));
@@ -73,6 +100,7 @@ class Upload extends Component {
     }
 
     render() {
+        console.log(this.props.videos);
         return (
             <View style={{ flex: 1 }} >
                 <Button
@@ -97,6 +125,20 @@ class Upload extends Component {
                     disabled={this.state.uploadButtonDisable}
                     onPress={this.uploadVideo}
                 />
+                <Card>
+                    <CardSection>
+                        <Text style={{fontSize: 18, padding: 5}}>
+                        Uploads:
+                        </Text>
+                    </CardSection>
+                    <CardSection>
+                        <ListView
+                            enableEmptySections
+                            dataSource={this.dataSource}
+                            renderRow={this.renderRow}
+                        />
+                    </CardSection>
+                </Card>
                 <ModalActivityIndicator
                     visible={this.state.loading}
                     size='large'
@@ -107,5 +149,15 @@ class Upload extends Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    const { currentUser } = firebase.auth();
+    const videos = _.map(state.videos, (val, uid) => {
+        return { ...val, uid };
+    });
+    const userVideos = videos.filter(obj => {
+        return obj.userID === currentUser.uid;
+    });
+    return { videos: userVideos };
+}
 
-export default Upload;
+export default connect(mapStateToProps, {})(Upload);

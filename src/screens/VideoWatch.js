@@ -1,37 +1,95 @@
 import React, { Component } from 'react';
-import { Dimensions, View } from 'react-native';
+import { Dimensions, View, ListView, Text } from 'react-native';
 import Expo, { Video } from 'expo';
+import { connect } from 'react-redux';
+import _ from 'lodash';
+
+import ListItem from '../components/ListItem';
+import Card from '../components/Card';
+import CardSection from '../components/CardSection';
 
 class VideoWatch extends Component {
 
     static naigationOptions = {
         tabBarVisible: false,
-        width: 480,
-        height: 270
     }
 
     componentWillMount() {
-        const width = Dimensions.get('window').width;
-        const height = (width*9)/16;
-        this.setState({ width, height });
+        this.createDataSource(this.props);
     }
 
-    render() {
-        return (
-            <View style={{ flex: 1 }}>
+    componentWillReceiveProps(nextProps) {
+        this.createDataSource(nextProps);
+    }
+
+    createDataSource({ videos }) {
+        const ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2
+        });
+        this.dataSource = ds.cloneWithRows(videos);
+    }
+
+    renderRow(video) {
+        return <ListItem video={video} />;
+    }
+
+    renderVideo() {
+        const width = Dimensions.get('window').width;
+        const height = (width*3)/4;
+        if(this.props.selectedVideo) {
+            return (
                 <Video
-                    source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/video-tube-e7c55.appspot.com/o/VID_29970813_232803_670.mp4?alt=media&token=0fcfc75c-d857-42ee-955a-890246930243' }}
+                    source={{ uri: this.props.selectedVideo.url }}
                     rate={1.0}
                     volume={1.0}
                     isMuted={false}
                     resizeMode={Expo.Video.RESIZE_MODE_CONTAIN}
                     shouldPlay
                     useNativeControls
-                    style={{ width: this.state.width, height: this.state.height }}
+                    style={{ width, height }}
                 />
+            );
+        }
+        return null;
+    }
+
+    render() {
+        return (
+            <View style={{ flex: 1 }}>
+                {this.renderVideo()}
+                <CardSection>
+                    <Text style={{ fontSize: 20, padding: 10 }}>
+                        {this.props.selectedVideo.name}
+                    </Text>
+                </CardSection>
+                <Card>
+                    <CardSection>
+                        <Text style={{fontSize: 18, padding: 5}}>
+                            Other Videos:
+                        </Text>
+                    </CardSection>
+                    <CardSection>
+                        <ListView
+                            enableEmptySections
+                            dataSource={this.dataSource}
+                            renderRow={this.renderRow}
+                        />
+                    </CardSection>
+                </Card>
             </View>
         );
     }
 }
 
-export default VideoWatch;
+const mapStateToProps = (state) => {
+    const videos = _.map(state.videos, (val, uid) => {
+        return { ...val, uid };
+    });
+    const { selectedVideo } = state;
+    const otherVideos = videos.filter(obj => {
+        return obj.uid !== selectedVideo.uid;
+    });
+    return { selectedVideo, videos: otherVideos };
+}
+
+export default connect(mapStateToProps, {})(VideoWatch);
